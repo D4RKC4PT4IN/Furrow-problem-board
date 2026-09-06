@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Furrow — Find a Problem Worth Solving</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --soil:#3A2E20;
+    --soil-dark:#2A2117;
+    --field:#EFE7CF;
+    --card:#FBF7EA;
+    --ink:#2B2317;
+    --ink-soft:#6B5F4C;
+    --growth:#4F7A45;
+    --growth-dark:#3E6136;
+    --harvest:#C6913C;
+    --harvest-soft:#F3E3C2;
+    --line:#DED0AE;
+    --rust:#A24632;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--field); color:var(--ink); font-family:'Work Sans',sans-serif; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3,.serif{ font-family:'Fraunces',serif; }
+  .mono{ font-family:'IBM Plex Mono',monospace; }
+  #app{ min-height:100vh; display:flex; flex-direction:column; }
+  button{ font-family:'Work Sans',sans-serif; cursor:pointer; }
+
+  /* ---------- Header ---------- */
+  header.top{
+    background:var(--soil); color:#EFE6D2; padding:18px 28px;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+    border-bottom:4px solid var(--harvest);
+  }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand-mark{ width:38px;height:38px;border-radius:9px 3px 9px 3px; background:var(--harvest); display:flex;align-items:center;justify-content:center; color:var(--soil-dark); font-family:'Fraunces',serif; font-weight:700; font-size:17px; flex-shrink:0; }
+  .brand h1{ margin:0; font-size:19px; font-weight:600; }
+  .brand span.sub{ display:block; font-size:12px; color:#C9BC9C; margin-top:1px; }
+  .session{ display:flex; align-items:center; gap:14px; font-size:14px; }
+  .who{ text-align:right; line-height:1.3; }
+  .who b{ font-weight:600; }
+  .who small{ display:block; color:#C9BC9C; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; }
+  .btn{ border:1px solid var(--harvest); background:transparent; color:#EFE6D2; padding:8px 14px; border-radius:20px; font-size:13px; font-weight:500; }
+  .btn:hover{ background:rgba(255,255,255,0.08); }
+  .btn.solid{ background:var(--growth); color:#fff; border-color:var(--growth); font-weight:600; }
+  .btn.solid:hover{ background:var(--growth-dark); }
+  .btn.harvest{ background:var(--harvest); color:var(--soil-dark); border-color:var(--harvest); font-weight:600; }
+  .btn.small{ padding:5px 11px; font-size:12px; }
+  .btn.ghost{ border-color:var(--line); color:var(--ink-soft); background:#fff; }
+
+  nav.tabs{ display:flex; gap:2px; background:var(--soil-dark); padding:0 24px; overflow-x:auto; }
+  nav.tabs button{ background:transparent; border:none; color:#B6A98A; padding:12px 18px; font-size:13.5px; font-weight:500; border-bottom:3px solid transparent; white-space:nowrap; }
+  nav.tabs button.active{ color:#fff; border-bottom-color:var(--harvest); }
+  nav.tabs button:hover{ color:#fff; }
+
+  main{ flex:1; padding:28px; max-width:1080px; margin:0 auto; width:100%; }
+
+  /* ---------- Login ---------- */
+  .login-wrap{ flex:1; display:flex; align-items:center; justify-content:center; padding:32px; }
+  .card-id{ background:var(--card); border:1px solid var(--line); border-radius:10px 3px 10px 3px; width:100%; max-width:400px; padding:30px 28px 26px; box-shadow:0 1px 2px rgba(58,46,32,0.08), 0 10px 26px rgba(58,46,32,0.1); position:relative; }
+  .card-id h2{ margin:6px 0 2px; font-size:22px; }
+  .card-id p.tag{ color:var(--ink-soft); font-size:13px; margin:0 0 20px; line-height:1.5; }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-soft); margin-bottom:5px; }
+  .field input, .field select, .field textarea{ width:100%; padding:10px 11px; border:1px solid var(--line); border-radius:6px; font-size:14px; font-family:'Work Sans',sans-serif; background:#fff; color:var(--ink); }
+  .field input:focus, .field select:focus, .field textarea:focus{ outline:2px solid var(--harvest); outline-offset:1px; }
+  .login-btn{ width:100%; padding:12px; margin-top:6px; border-radius:6px; font-size:14px; }
+  .login-note{ font-size:11.5px; color:var(--ink-soft); margin-top:14px; line-height:1.5; }
+  .err{ background:#F5DCD3; color:var(--rust); border:1px solid #E3B3A2; padding:9px 11px; border-radius:6px; font-size:12.5px; margin-bottom:12px; }
+
+  .section-head{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:10px; }
+  .section-head h2{ font-size:23px; margin:0; }
+  .section-head p{ margin:3px 0 0; color:var(--ink-soft); font-size:13.5px; max-width:540px; }
+
+  /* ---------- Filters ---------- */
+  .filter-bar{ display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+  .filter-bar input{ flex:1; min-width:200px; padding:10px 13px; border:1px solid var(--line); border-radius:20px; font-size:14px; background:#fff; }
+  .filter-bar select{ padding:10px 13px; border:1px solid var(--line); border-radius:20px; font-size:13.5px; background:#fff; }
+
+  /* ---------- Problem grid ---------- */
+  .prob-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:14px; }
+  .prob-card{ background:var(--card); border:1px solid var(--line); border-radius:10px 3px 10px 3px; padding:16px 16px 14px; display:flex; flex-direction:column; gap:8px; cursor:pointer; transition:box-shadow .15s, transform .15s; }
+  .prob-card:hover{ box-shadow:0 8px 22px rgba(58,46,32,0.13); transform:translateY(-2px); }
+  .chip-row{ display:flex; gap:6px; flex-wrap:wrap; }
+  .chip{ font-size:10.5px; text-transform:uppercase; letter-spacing:0.04em; padding:3px 8px; border-radius:20px; background:#E7DCBE; color:var(--ink-soft); }
+  .chip.urgency-high{ background:#F5DCD3; color:var(--rust); }
+  .chip.urgency-medium{ background:var(--harvest-soft); color:#8A6520; }
+  .chip.urgency-low{ background:#E1EAD9; color:var(--growth-dark); }
+  .prob-card h3{ font-size:15.5px; margin:0; line-height:1.35; }
+  .prob-card .snippet{ font-size:12.8px; color:var(--ink-soft); line-height:1.5; }
+  .stage{ display:flex; align-items:center; gap:5px; margin-top:auto; padding-top:8px; }
+  .stage .seg{ height:5px; flex:1; border-radius:3px; background:var(--line); }
+  .stage .seg.on{ background:var(--growth); }
+  .stage .seg.on.solved{ background:var(--harvest); }
+  .stage-label{ font-size:11px; color:var(--ink-soft); font-weight:600; white-space:nowrap; }
+  .mine-tag{ font-size:10.5px; color:var(--growth-dark); font-weight:600; }
+  .empty{ text-align:center; padding:50px 20px; color:var(--ink-soft); }
+
+  /* ---------- Modal ---------- */
+  .overlay{ position:fixed; inset:0; background:rgba(42,33,23,0.5); display:flex; align-items:center; justify-content:center; padding:20px; z-index:50; }
+  .modal{ background:var(--card); border-radius:12px 4px 12px 4px; max-width:560px; width:100%; max-height:88vh; overflow-y:auto; padding:26px 26px 22px; position:relative; border:1px solid var(--line); }
+  .modal .close{ position:absolute; top:14px; right:16px; background:none; border:none; font-size:20px; color:var(--ink-soft); line-height:1; }
+  .modal h2{ margin:4px 0 6px; font-size:20px; padding-right:24px; }
+  .modal .desc{ font-size:14px; line-height:1.65; color:var(--ink); margin:14px 0 16px; white-space:pre-wrap; }
+  .meta-line{ font-size:12.5px; color:var(--ink-soft); margin-bottom:2px; }
+  .modal-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; }
+  .msg{ margin-top:12px; font-size:13px; padding:9px 11px; border-radius:6px; }
+  .msg.good{ background:#E1EAD9; color:var(--growth-dark); border:1px solid #C4D9B6; }
+  .msg.warn{ background:#F5DCD3; color:var(--rust); border:1px solid #E3B3A2; }
+  .solved-banner{ background:var(--harvest-soft); color:#8A6520; padding:9px 12px; border-radius:6px; font-size:13px; margin-top:10px; }
+
+  /* ---------- Post form ---------- */
+  .post-form{ background:var(--card); border:1px solid var(--line); border-radius:12px 4px 12px 4px; padding:22px; max-width:640px; }
+  .post-form .row2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  textarea{ resize:vertical; min-height:100px; }
+  .urgency-toggle{ display:flex; gap:8px; }
+  .urgency-toggle button{ flex:1; padding:9px; border:1px solid var(--line); background:#fff; border-radius:6px; font-size:13px; color:var(--ink-soft); font-weight:500; }
+  .urgency-toggle button.sel{ border-color:var(--harvest); background:var(--harvest-soft); color:#8A6520; font-weight:600; }
+
+  /* ---------- My garden ---------- */
+  .garden-tabs{ display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .garden-tabs button{ padding:8px 14px; border-radius:20px; border:1px solid var(--line); background:#fff; font-size:13px; color:var(--ink-soft); font-weight:500; }
+  .garden-tabs button.active{ background:var(--growth); border-color:var(--growth); color:#fff; font-weight:600; }
+  .list-card{ background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+  .list-card .title{ font-size:14px; font-weight:600; }
+  .list-card .sub{ font-size:11.5px; color:var(--ink-soft); margin-top:2px; }
+  .list-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .none{ color:var(--ink-soft); font-size:13px; padding:14px 0; }
+
+  footer{ text-align:center; padding:16px; font-size:11.5px; color:var(--ink-soft); }
+
+  @media (max-width:640px){
+    .post-form .row2{ grid-template-columns:1fr; }
+    header.top{ padding:14px 16px; }
+    main{ padding:18px; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function(){
+
+  var DEPARTMENTS = ["College of Engineering","College of Business Administration","College of Nursing","College of Education","College of Information Technology","College of Agriculture","Office of Student Affairs","University Health Services"];
+  var CATEGORIES = ["Software & Apps","Hardware & IoT","Data & Analytics","Process & Policy","Environment & Sustainability","Health & Wellness","Community Outreach"];
+
+  var SEED = [
+    {id:"p1", title:"Enrollment reminders only go out once, so students miss deadlines", dept:"Office of Student Affairs", cat:"Process & Policy", urgency:"medium", postedBy:"3rd Year, BS Accountancy", date:"2026-08-02", desc:"Enrollment deadlines are announced once on the portal and never followed up on. Students who miss the announcement, especially those juggling part-time jobs, end up enrolling late or paying penalty fees. A lightweight reminder system could cut this down significantly.", status:"open"},
+    {id:"p2", title:"Nursing students can't easily log clinical hours across hospital sites", dept:"College of Nursing", cat:"Data & Analytics", urgency:"high", postedBy:"4th Year, BS Nursing", date:"2026-07-28", desc:"Clinical duty hours are currently tracked on paper logbooks that get signed at each hospital site. It's easy to lose pages, and computing total hours near graduation is a manual, error-prone process for both students and the clinical coordinator.", status:"claimed", claimedBy:"you"},
+    {id:"p3", title:"No way to check cafeteria food availability before walking over", dept:"Office of Student Affairs", cat:"Software & Apps", urgency:"medium", postedBy:"2nd Year, BS Information Technology", date:"2026-08-10", desc:"During lunch rush, stalls run out of popular dishes within 20 minutes, but students only find out after standing in line. A simple live board of what's still available at each stall would save a lot of wasted time.", status:"open"},
+    {id:"p4", title:"Faculty have no shared way to report broken classroom equipment", dept:"College of Engineering", cat:"Process & Policy", urgency:"medium", postedBy:"Laboratory Assistant, Civil Engineering", date:"2026-07-15", desc:"Projectors, aircon units, and lab equipment break down often, but reports are made verbally to whoever is around. Repairs get delayed because there's no record of what's broken, since when, or who reported it.", status:"open"},
+    {id:"p5", title:"Water refilling stations run dry with no alert to facilities staff", dept:"College of Agriculture", cat:"Environment & Sustainability", urgency:"high", postedBy:"1st Year, BS Agribusiness", date:"2026-08-14", desc:"Several refilling stations across campus run out of water for hours before anyone notices, especially the ones farthest from the facilities office. Students are left refilling from restroom taps instead.", status:"open"},
+    {id:"p6", title:"Commuter students struggle to coordinate carpools to campus", dept:"Office of Student Affairs", cat:"Community Outreach", urgency:"low", postedBy:"3rd Year, BS Psychology", date:"2026-07-20", desc:"Many students live along the same routes but have no organized way to find each other for carpooling, so they rely on scattered group chats that are hard to search or trust.", status:"solved", solvedBy:"a graduating IT student", solvedNote:"Solved with a simple route-matching form that pairs students by barangay and class schedule."},
+    {id:"p7", title:"Group projects have no fair way to track who contributed what", dept:"College of Business Administration", cat:"Software & Apps", urgency:"medium", postedBy:"2nd Year, BS Business Administration", date:"2026-08-05", desc:"Group grades often don't reflect individual effort because there's no lightweight way to log who did which task and when. Disputes usually surface only after grades come out.", status:"open"},
+    {id:"p8", title:"IT helpdesk tickets pile up with no way to check status", dept:"College of Information Technology", cat:"Software & Apps", urgency:"high", postedBy:"Student Assistant, IT Helpdesk", date:"2026-07-30", desc:"Students submit helpdesk requests by email and then have to email again just to ask for an update. The helpdesk has no queue view, so easy tickets and urgent ones get handled in random order.", status:"claimed", claimedBy:"a 4th year CS student"},
+    {id:"p9", title:"No way to check cafeteria menu ingredients for food allergies", dept:"University Health Services", cat:"Health & Wellness", urgency:"high", postedBy:"1st Year, BS Nursing", date:"2026-08-11", desc:"Students with allergies have to ask stall vendors directly and hope the answer is accurate. A posted or searchable ingredient list, even a simple one, would prevent avoidable reactions.", status:"open"},
+    {id:"p10", title:"Recyclables and trash get mixed from unclear bin labeling", dept:"College of Agriculture", cat:"Environment & Sustainability", urgency:"low", postedBy:"3rd Year, BS Environmental Science", date:"2026-07-18", desc:"Bins around campus are labeled inconsistently, and there's no feedback loop showing how much waste is actually being diverted. A clearer system, even just better signage backed by data, could help.", status:"open"},
+    {id:"p11", title:"New students get lost navigating campus during their first week", dept:"Office of Student Affairs", cat:"Software & Apps", urgency:"medium", postedBy:"Freshman Orientation Volunteer", date:"2026-08-01", desc:"Incoming freshmen consistently report getting lost finding classrooms, offices, and even the correct building during their first week, despite printed campus maps at the gate.", status:"open"},
+    {id:"p12", title:"Faculty research outputs aren't centrally tracked for accreditation", dept:"College of Education", cat:"Data & Analytics", urgency:"high", postedBy:"Research Coordinator, College of Education", date:"2026-07-22", desc:"Faculty publications live in scattered folders and personal drives. Every accreditation cycle, compiling a complete list takes weeks of manual follow-up with each department.", status:"open"},
+    {id:"p13", title:"Intramural court and field bookings conflict often", dept:"Office of Student Affairs", cat:"Process & Policy", urgency:"low", postedBy:"Intramurals Committee Member", date:"2026-07-10", desc:"Teams book courts by texting the committee directly, which leads to double-bookings during peak intramural season since there's no shared view of what's already reserved.", status:"open"},
+    {id:"p14", title:"No vetted list of safe off-campus housing for students", dept:"Office of Student Affairs", cat:"Community Outreach", urgency:"medium", postedBy:"4th Year, BS Social Work", date:"2026-08-08", desc:"Students relocating for school rely on word of mouth or unverified Facebook posts to find boarding houses, with no way to check reviews from past student tenants.", status:"open"},
+    {id:"p15", title:"Science lab equipment has no online reservation system", dept:"College of Engineering", cat:"Hardware & IoT", urgency:"medium", postedBy:"Laboratory Custodian, Science Building", date:"2026-07-25", desc:"Shared lab equipment like microscopes and testing kits are booked first-come-first-served in person, which often means students wait around or plan lab work around guesswork.", status:"open"}
+  ];
+
+  var state = {
+    booted:false, user:null, problems:[], view:"browse",
+    search:"", deptFilter:"All", catFilter:"All", statusFilter:"All",
+    activeProblem:null, modalMsg:null, loginErr:"",
+    gardenTab:"posted",
+    postForm:{title:"",dept:DEPARTMENTS[0],cat:CATEGORIES[0],desc:"",urgency:"medium"}
+  };
+
+  function render(){
+    var root = document.getElementById("app");
+    root.innerHTML = "";
+    if(!state.booted){ root.appendChild(el("div",{class:"login-wrap"},[txt("p","serif","Turning the soil…")])); return; }
+    if(!state.user){ root.appendChild(loginScreen()); return; }
+    root.appendChild(headerEl());
+    root.appendChild(tabsEl());
+    var main = document.createElement("main");
+    if(state.view === "browse") main.appendChild(browseView());
+    if(state.view === "post") main.appendChild(postView());
+    if(state.view === "garden") main.appendChild(gardenView());
+    root.appendChild(main);
+    var foot = document.createElement("footer");
+    foot.textContent = "Furrow — a demo problem-discovery board for coursework evaluation purposes.";
+    root.appendChild(foot);
+    if(state.activeProblem) root.appendChild(problemModal(state.activeProblem));
+  }
+
+  function el(tag, attrs, children){
+    var e = document.createElement(tag); attrs = attrs || {};
+    for(var k in attrs){
+      if(k === "class") e.className = attrs[k];
+      else if(k === "html") e.innerHTML = attrs[k];
+      else if(k.indexOf("on") === 0) e.addEventListener(k.slice(2), attrs[k]);
+      else e.setAttribute(k, attrs[k]);
+    }
+    (children||[]).forEach(function(c){ if(c) e.appendChild(c); });
+    return e;
+  }
+  function txt(tag, className, text){ var e = document.createElement(tag); if(className) e.className = className; e.textContent = text; return e; }
+
+  /* ================= Boot / storage (personal, not shared) ================= */
+  async function boot(){
+    try{
+      var res = await window.storage.get("furrow-problems", false);
+      state.problems = JSON.parse(res.value);
+    }catch(e){
+      state.problems = JSON.parse(JSON.stringify(SEED));
+      try{ await window.storage.set("furrow-problems", JSON.stringify(state.problems), false); }catch(e2){}
+    }
+    state.booted = true;
+    render();
+  }
+  async function saveProblems(){
+    try{ await window.storage.set("furrow-problems", JSON.stringify(state.problems), false); }catch(e){}
+  }
+
+  /* ================= Login ================= */
+  function loginScreen(){
+    var wrap = el("div",{class:"login-wrap"});
+    var card = el("div",{class:"card-id"});
+    card.appendChild(txt("h2","serif","Furrow"));
+    card.appendChild(txt("p","tag","Every real problem is a seed for a project worth building. Sign in to browse what departments and students need solved, or plant one of your own."));
+    if(state.loginErr) card.appendChild(txt("div","err",state.loginErr));
+
+    var nameInput = el("input",{id:"login-name", placeholder:"e.g. Juan Dela Cruz"});
+    card.appendChild(el("div",{class:"field"},[txt("label","","Full name"), nameInput]));
+    var passInput = el("input",{id:"login-pass", type:"password", placeholder:"Any password"});
+    card.appendChild(el("div",{class:"field"},[txt("label","","Password"), passInput]));
+
+    var btn = txt("button","btn solid login-btn","Enter Furrow");
+    btn.addEventListener("click", function(){
+      var name = nameInput.value.trim(); var pass = passInput.value;
+      if(!name || !pass){ state.loginErr = "Please enter both your name and a password to continue."; render(); return; }
+      state.loginErr = "";
+      state.user = {name:name};
+      render();
+    });
+    card.appendChild(btn);
+    card.appendChild(txt("p","login-note","Demo sign-in: any password works, but a name and password are both required. Everything you post, claim, or save here stays on your own device — nothing is shared with other evaluators."));
+    wrap.appendChild(card);
+    return wrap;
+  }
+
+  /* ================= Header / tabs ================= */
+  function headerEl(){
+    var brand = el("div",{class:"brand"},[
+      el("div",{class:"brand-mark"},[document.createTextNode("Fr")]),
+      el("div",{},[ txt("h1","","Furrow"), txt("span","sub","Find a problem worth solving") ])
+    ]);
+    var whoWrap = el("div",{class:"who"});
+    var b = document.createElement("b"); b.textContent = state.user.name;
+    var small = document.createElement("small"); small.textContent = "Signed in";
+    whoWrap.appendChild(b); whoWrap.appendChild(small);
+    var logout = txt("button","btn small","Log Out");
+    logout.addEventListener("click", function(){ state.user=null; state.view="browse"; render(); });
+    var session = el("div",{class:"session"},[whoWrap, logout]);
+    return el("header",{class:"top"},[brand, session]);
+  }
+
+  function tabsEl(){
+    var nav = el("nav",{class:"tabs"});
+    [["browse","Browse Problems"],["post","Plant a Problem"],["garden","My Garden"]].forEach(function(it){
+      var bt = txt("button", state.view===it[0] ? "active":"", it[1]);
+      bt.addEventListener("click", function(){ state.view=it[0]; state.activeProblem=null; render(); });
+      nav.appendChild(bt);
+    });
+    return nav;
+  }
+
+  /* ================= Browse ================= */
+  function browseView(){
+    var wrap = document.createDocumentFragment();
+    wrap.appendChild(el("div",{class:"section-head"},[
+      el("div",{},[ txt("h2","","Browse Problems"), txt("p","","Real problems from students and departments across campus, ready for someone to take on as a project.") ])
+    ]));
+
+    var bar = el("div",{class:"filter-bar"});
+    var input = el("input",{placeholder:"Search by keyword…", value: state.search});
+    input.addEventListener("input", function(e){ state.search = e.target.value; renderGridOnly(); });
+    bar.appendChild(input);
+
+    var deptSel = el("select",{});
+    ["All"].concat(DEPARTMENTS).forEach(function(d){ var o=document.createElement("option"); o.value=d; o.textContent=d; if(d===state.deptFilter) o.selected=true; deptSel.appendChild(o); });
+    deptSel.addEventListener("change", function(e){ state.deptFilter = e.target.value; renderGridOnly(); });
+    bar.appendChild(deptSel);
+
+    var catSel = el("select",{});
+    ["All"].concat(CATEGORIES).forEach(function(c){ var o=document.createElement("option"); o.value=c; o.textContent=c; if(c===state.catFilter) o.selected=true; catSel.appendChild(o); });
+    catSel.addEventListener("change", function(e){ state.catFilter = e.target.value; renderGridOnly(); });
+    bar.appendChild(catSel);
+
+    var statSel = el("select",{});
+    ["All","Open","Being Cultivated","Solved"].forEach(function(s){ var o=document.createElement("option"); o.value=s; o.textContent=s; if(s===state.statusFilter) o.selected=true; statSel.appendChild(o); });
+    statSel.addEventListener("change", function(e){ state.statusFilter = e.target.value; renderGridOnly(); });
+    bar.appendChild(statSel);
+
+    wrap.appendChild(bar);
+    var holder = el("div",{id:"grid-holder"});
+    holder.appendChild(buildGrid());
+    wrap.appendChild(holder);
+    return wrap;
+  }
+
+  function renderGridOnly(){
+    var holder = document.getElementById("grid-holder");
+    if(!holder) return;
+    holder.innerHTML = "";
+    holder.appendChild(buildGrid());
+  }
+
+  function statusLabel(p){ return p.status==="open" ? "Open" : (p.status==="claimed" ? "Being Cultivated" : "Solved"); }
+
+  function buildGrid(){
+    var q = state.search.trim().toLowerCase();
+    var filtered = state.problems.filter(function(p){
+      var matchesQ = !q || p.title.toLowerCase().indexOf(q)>-1 || p.desc.toLowerCase().indexOf(q)>-1;
+      var matchesD = state.deptFilter==="All" || p.dept===state.deptFilter;
+      var matchesC = state.catFilter==="All" || p.cat===state.catFilter;
+      var matchesS = state.statusFilter==="All" || statusLabel(p)===state.statusFilter;
+      return matchesQ && matchesD && matchesC && matchesS;
+    });
+    if(filtered.length===0){ return el("div",{class:"empty"},[txt("p","","No problems match your filters. Try widening your search.")]); }
+    var grid = el("div",{class:"prob-grid"});
+    filtered.forEach(function(p){
+      var card = el("div",{class:"prob-card"});
+      var chipRow = el("div",{class:"chip-row"},[
+        txt("span","chip", p.dept),
+        txt("span","chip urgency-"+p.urgency, p.urgency + " priority")
+      ]);
+      card.appendChild(chipRow);
+      card.appendChild(txt("h3","",p.title));
+      card.appendChild(txt("div","snippet", p.cat + " · Posted " + p.date));
+      if(p.status==="claimed" && p.claimedBy==="you") card.appendChild(txt("div","mine-tag","You're cultivating this"));
+      if(p.postedByMe) card.appendChild(txt("div","mine-tag","You planted this"));
+
+      var stage = el("div",{class:"stage"});
+      var seg1 = el("div",{class:"seg on"});
+      var seg2 = el("div",{class:"seg" + (p.status!=="open" ? " on":"")});
+      var seg3 = el("div",{class:"seg" + (p.status==="solved" ? " on solved":"")});
+      stage.appendChild(seg1); stage.appendChild(seg2); stage.appendChild(seg3);
+      stage.appendChild(txt("span","stage-label", statusLabel(p)));
+      card.appendChild(stage);
+
+      card.addEventListener("click", function(){ state.activeProblem=p.id; state.modalMsg=null; render(); });
+      grid.appendChild(card);
+    });
+    return grid;
+  }
+
+  /* ================= Modal ================= */
+  function problemModal(id){
+    var p = state.problems.find(function(x){ return x.id===id; });
+    if(!p) return document.createDocumentFragment();
+    var overlay = el("div",{class:"overlay"});
+    overlay.addEventListener("click", function(e){ if(e.target===overlay){ state.activeProblem=null; render(); } });
+    var modal = el("div",{class:"modal"});
+    var close = txt("button","close","×");
+    close.addEventListener("click", function(){ state.activeProblem=null; render(); });
+    modal.appendChild(close);
+
+    modal.appendChild(el("div",{class:"chip-row"},[
+      txt("span","chip", p.dept), txt("span","chip", p.cat), txt("span","chip urgency-"+p.urgency, p.urgency+" priority")
+    ]));
+    modal.appendChild(txt("h2","",p.title));
+    modal.appendChild(txt("div","meta-line","Posted by " + p.postedBy + " · " + p.date));
+    modal.appendChild(txt("p","desc", p.desc));
+
+    if(p.status==="solved"){
+      modal.appendChild(el("div",{class:"solved-banner"},[document.createTextNode("Solved by " + p.solvedBy + ". " + (p.solvedNote||""))]));
+    }
+
+    var actions = el("div",{class:"modal-actions"});
+    if(p.status==="open"){
+      var claimBtn = txt("button","btn solid small","Claim to Cultivate");
+      claimBtn.addEventListener("click", function(){ claimProblem(p.id); });
+      actions.appendChild(claimBtn);
+    } else if(p.status==="claimed" && p.claimedBy==="you"){
+      var releaseBtn = txt("button","btn small","Release This Problem");
+      releaseBtn.addEventListener("click", function(){ releaseProblem(p.id); });
+      actions.appendChild(releaseBtn);
+      var solveBtn = txt("button","btn harvest small","Mark as Solved");
+      solveBtn.addEventListener("click", function(){ solveProblem(p.id); });
+      actions.appendChild(solveBtn);
+    }
+    var saveBtn = txt("button","btn ghost small", p.saved ? "Remove from Saved" : "Save for Later");
+    saveBtn.addEventListener("click", function(){ toggleSave(p.id); });
+    actions.appendChild(saveBtn);
+
+    if(p.postedByMe){
+      var delBtn = txt("button","btn ghost small","Delete My Post");
+      delBtn.addEventListener("click", function(){ deleteProblem(p.id); });
+      actions.appendChild(delBtn);
+    }
+
+    modal.appendChild(actions);
+    if(state.modalMsg) modal.appendChild(el("div",{class:"msg "+state.modalMsg.type},[document.createTextNode(state.modalMsg.text)]));
+    overlay.appendChild(modal);
+    return overlay;
+  }
+
+  async function claimProblem(id){
+    var p = state.problems.find(function(x){return x.id===id;});
+    if(!p || p.status!=="open") return;
+    p.status="claimed"; p.claimedBy="you";
+    await saveProblems();
+    state.modalMsg={type:"good", text:'Claimed! It now shows under "Being Cultivated" in My Garden.'};
+    render();
+  }
+  async function releaseProblem(id){
+    var p = state.problems.find(function(x){return x.id===id;});
+    if(!p) return;
+    p.status="open"; delete p.claimedBy;
+    await saveProblems();
+    state.modalMsg={type:"good", text:"Released. It's open for anyone to claim again."};
+    render();
+  }
+  async function solveProblem(id){
+    var p = state.problems.find(function(x){return x.id===id;});
+    if(!p) return;
+    p.status="solved"; p.solvedBy="you"; p.solvedNote="Marked solved from your project work.";
+    await saveProblems();
+    state.modalMsg={type:"good", text:"Marked as solved. Nice work."};
+    render();
+  }
+  async function toggleSave(id){
+    var p = state.problems.find(function(x){return x.id===id;});
+    if(!p) return;
+    p.saved = !p.saved;
+    await saveProblems();
+    state.modalMsg={type:"good", text: p.saved ? "Saved for later." : "Removed from saved."};
+    render();
+  }
+  async function deleteProblem(id){
+    state.problems = state.problems.filter(function(x){ return x.id!==id; });
+    await saveProblems();
+    state.activeProblem=null;
+    render();
+  }
+
+  /* ================= Post a problem ================= */
+  function postView(){
+    var wrap = document.createDocumentFragment();
+    wrap.appendChild(el("div",{class:"section-head"},[
+      el("div",{},[ txt("h2","","Plant a Problem"), txt("p","","Describe a real problem you or your department deals with. Someone browsing Furrow might turn it into their capstone project.") ])
+    ]));
+    var form = el("div",{class:"post-form"});
+
+    var titleInput = el("input",{placeholder:"Short, specific title", value: state.postForm.title});
+    titleInput.addEventListener("input", function(e){ state.postForm.title = e.target.value; });
+    form.appendChild(el("div",{class:"field"},[txt("label","","Title"), titleInput]));
+
+    var row2 = el("div",{class:"row2"});
+    var deptSel = el("select",{});
+    DEPARTMENTS.forEach(function(d){ var o=document.createElement("option"); o.value=d; o.textContent=d; if(d===state.postForm.dept) o.selected=true; deptSel.appendChild(o); });
+    deptSel.addEventListener("change", function(e){ state.postForm.dept = e.target.value; });
+    row2.appendChild(el("div",{class:"field"},[txt("label","","Department"), deptSel]));
+
+    var catSel = el("select",{});
+    CATEGORIES.forEach(function(c){ var o=document.createElement("option"); o.value=c; o.textContent=c; if(c===state.postForm.cat) o.selected=true; catSel.appendChild(o); });
+    catSel.addEventListener("change", function(e){ state.postForm.cat = e.target.value; });
+    row2.appendChild(el("div",{class:"field"},[txt("label","","Category"), catSel]));
+    form.appendChild(row2);
+
+    var descArea = el("textarea",{placeholder:"What's going wrong, who does it affect, and how often does it happen?"});
+    descArea.value = state.postForm.desc;
+    descArea.addEventListener("input", function(e){ state.postForm.desc = e.target.value; });
+    form.appendChild(el("div",{class:"field"},[txt("label","","Description"), descArea]));
+
+    var urgField = el("div",{class:"field"},[txt("label","","Priority")]);
+    var toggle = el("div",{class:"urgency-toggle"});
+    ["low","medium","high"].forEach(function(u){
+      var bt = txt("button", state.postForm.urgency===u ? "sel":"", u.charAt(0).toUpperCase()+u.slice(1));
+      bt.addEventListener("click", function(){ state.postForm.urgency=u; render(); });
+      toggle.appendChild(bt);
+    });
+    urgField.appendChild(toggle);
+    form.appendChild(urgField);
+
+    var submitBtn = txt("button","btn solid","Plant This Problem");
+    submitBtn.style.marginTop = "8px";
+    submitBtn.addEventListener("click", async function(){
+      if(!state.postForm.title.trim() || !state.postForm.desc.trim()) return;
+      var newP = {
+        id:"p"+Date.now(), title: state.postForm.title.trim(), dept: state.postForm.dept, cat: state.postForm.cat,
+        desc: state.postForm.desc.trim(), urgency: state.postForm.urgency, postedBy: state.user.name,
+        date: new Date().toISOString().slice(0,10), status:"open", postedByMe:true
+      };
+      state.problems.unshift(newP);
+      await saveProblems();
+      state.postForm = {title:"",dept:DEPARTMENTS[0],cat:CATEGORIES[0],desc:"",urgency:"medium"};
+      state.view = "garden"; state.gardenTab = "posted";
+      render();
+    });
+    form.appendChild(submitBtn);
+
+    wrap.appendChild(form);
+    return wrap;
+  }
+
+  /* ================= My Garden ================= */
+  function gardenView(){
+    var wrap = document.createDocumentFragment();
+    wrap.appendChild(el("div",{class:"section-head"},[
+      el("div",{},[ txt("h2","","My Garden"), txt("p","","Everything you've planted, claimed, or saved for later.") ])
+    ]));
+    var tabs = el("div",{class:"garden-tabs"});
+    [["posted","Planted by Me"],["claimed","Being Cultivated"],["saved","Saved for Later"]].forEach(function(t){
+      var bt = txt("button", state.gardenTab===t[0] ? "active":"", t[1]);
+      bt.addEventListener("click", function(){ state.gardenTab=t[0]; render(); });
+      tabs.appendChild(bt);
+    });
+    wrap.appendChild(tabs);
+
+    var list;
+    if(state.gardenTab==="posted") list = state.problems.filter(function(p){ return p.postedByMe; });
+    else if(state.gardenTab==="claimed") list = state.problems.filter(function(p){ return p.status==="claimed" && p.claimedBy==="you"; });
+    else list = state.problems.filter(function(p){ return p.saved; });
+
+    if(list.length===0){
+      wrap.appendChild(txt("p","none", state.gardenTab==="posted" ? "You haven't planted any problems yet." : (state.gardenTab==="claimed" ? "You're not cultivating any problems yet." : "You haven't saved any problems yet.")));
+      return wrap;
+    }
+    list.forEach(function(p){
+      var row = el("div",{class:"list-card"});
+      row.appendChild(el("div",{},[ txt("div","title",p.title), txt("div","sub", p.dept + " · " + statusLabel(p)) ]));
+      var actions = el("div",{class:"list-actions"});
+      var viewBtn = txt("button","btn ghost small","View");
+      viewBtn.addEventListener("click", function(){ state.activeProblem=p.id; state.modalMsg=null; render(); });
+      actions.appendChild(viewBtn);
+      row.appendChild(actions);
+      wrap.appendChild(row);
+    });
+    return wrap;
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
